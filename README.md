@@ -11,8 +11,9 @@ to go on npm, because of that it's needed to clone it as well and follow the ins
 1. Make sure you have a mongo instance up & running
 2. Clone the [base connector](https://github.com/fugazi-io/connector.node) and follow the instructions there
 3. Clone this repo (let's say that it was cloned to `/CONNECTOR`)
-4. Compile the source: `/CONNECTOR > ./node_modules/typescript/bin/tsc -p ./scripts`
-5. Run the connector: `/CONNECTOR > node ./scripts/bin/index.js`
+4. Install dependencies: `/CONNECTOR > npm install`
+5. Compile the source: `/CONNECTOR > ./node_modules/typescript/bin/tsc -p ./scripts`
+6. Run the connector: `/CONNECTOR > node ./scripts/bin/index.js`
 
 ### Options
 You can pass the `port` and `host` to the connector when running it:
