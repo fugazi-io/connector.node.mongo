@@ -5,7 +5,7 @@
 import * as mongo from "mongodb";
 import * as connector from "fugazi.connector.node";
 
-import program =  require("commander");
+import program = require("commander");
 
 import { MongoFacade } from "./shared";
 
@@ -94,7 +94,6 @@ let CONNECTOR: connector.Connector;
 	CONNECTOR = builder.build();
 	CONNECTOR.start();
 })();
-
 
 function establishMongoUrl(dbName?: string): string {
 	const url = `mongodb://${ host }:${ port }`;
