@@ -10,15 +10,26 @@ let MONGO: MongoFacade;
 
 type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
 async function list(ctx: connector.CommandHandlerContext) {
-	const collections: MongoListCollectionsResult = await (await MONGO.db(ctx.params.db)).listCollections({}).toArray();
+	try {
+		const collections: MongoListCollectionsResult = await (await MONGO.db(ctx.params.db)).listCollections({}).toArray();
 
-	ctx.type = "application/json";
-	ctx.body = {
-		count: collections.length,
-		items: collections.map(collection => {
-			return { name: collection.name };
-		})
-	};
+		ctx.type = "application/json";
+		ctx.body = {
+			status: 0, // value for fugazi.components.commands.handler.ResultStatus.Success
+			value: {
+				count: collections.length,
+				items: collections.map(collection => {
+					return {name: collection.name};
+				})
+			}
+		};
+	} catch (e) {
+		ctx.type = "application/json";
+		ctx.body = {
+			status: 1, // value for fugazi.components.commands.handler.ResultStatus.Failure
+			error: e.message
+		};
+	}
 }
 
 export function init(builder: connector.Builder, mongo: MongoFacade): connector.Module {

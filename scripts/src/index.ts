@@ -10,11 +10,12 @@ import program = require("commander");
 import { MongoFacade } from "./shared";
 
 const VERSION = "1.0.0",
-	DEFAULT_PORT = 27017,
-	DEFAULT_HOST = "localhost";
+	DEFAULT_HOST = "localhost",
+	DEFAULT_MONGO_PORT = 27017,
+	DEFAULT_LISTEN_PORT = 33333;
 
-let port: number,
-	host: string;
+let mongoPort: number,
+	mongoHost: string;
 
 type FacadeImpl = MongoFacade & {
 	_admin: mongo.Admin;
@@ -64,23 +65,30 @@ import { init as collections } from "./collections";
 
 declare module "commander" {
 	interface ICommand {
-		host?: string;
-		port?: number | string;
-		database?: string;
+		mongoHost?: string;
+		mongoPort?: number | string;
+		listenHost?: string;
+		listenPort?: number | string;
 	}
 }
 
 let CONNECTOR: connector.Connector;
 (() => {
 	program.version(VERSION)
-		.option("-h, --host [host]", "Host")
-		.option("-p, --port [port]", "Port")
+		.option("--mongo-host [host]", "Port on which MongoDB is listening")
+		.option("--mongo-port [port]", "Host on which MongoDB is listening")
+		.option("--listen-host [host]", "Host on which the service will listen on")
+		.option("--listen-port [port]", "Port on which the service will listen on")
 		.parse(process.argv);
 
-	host = program.host || DEFAULT_HOST;
-	port = Number(program.port) || DEFAULT_PORT;
+	const listenHost = program.listenHost || DEFAULT_HOST;
+	const listenPort = Number(program.listenPort) || DEFAULT_LISTEN_PORT;
+
+	mongoHost = program.mongoHost || DEFAULT_HOST;
+	mongoPort = Number(program.mongoPort) || DEFAULT_MONGO_PORT;
 
 	const builder = new connector.Builder();
+	builder.server().host(listenHost).port(listenPort);
 	const module = {
 		name: "mongo",
 		title: "MongoDB connector",
@@ -96,7 +104,7 @@ let CONNECTOR: connector.Connector;
 })();
 
 function establishMongoUrl(dbName?: string): string {
-	const url = `mongodb://${ host }:${ port }`;
+	const url = `mongodb://${ mongoHost }:${ mongoPort }`;
 
 	if (dbName && dbName.trim().length > 0) {
 		return url + "/" + dbName;

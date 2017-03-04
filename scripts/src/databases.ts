@@ -17,14 +17,20 @@ async function list(ctx: connector.CommandHandlerContext) {
 
 		ctx.type = "application/json";
 		ctx.body = {
-			count: db.databases.length,
-			items: db.databases.map(db => {
-				return { name: db.name };
-			})
+			status: 0, // value for fugazi.components.commands.handler.ResultStatus.Success
+			value: {
+				count: db.databases.length,
+				items: db.databases.map(db => {
+					return {name: db.name};
+				})
+			}
 		};
 	} catch (e) {
-		ctx.body = "internal server error: " + e;
-		ctx.status = 500;
+		ctx.type = "application/json";
+		ctx.body = {
+			status: 1, // value for fugazi.components.commands.handler.ResultStatus.Failure
+			error: e.message
+		};
 	}
 }
 
