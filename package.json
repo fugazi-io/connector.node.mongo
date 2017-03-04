@@ -1,6 +1,6 @@
 {
   "name": "fugazi.connector.node.mongo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a fugazi mongodb connector for node",
   "main": "scripts/bin/index.js",
   "scripts": {

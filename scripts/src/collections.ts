@@ -2,7 +2,7 @@
  * Created by nitzan on 21/02/2017.
  */
 
-import { MongoFacade } from "./shared";
+import { MongoFacade, executeMongoCommand } from "./shared";
 import * as connector from "fugazi.connector.node";
 
 let MONGO: MongoFacade;
@@ -10,7 +10,7 @@ let MONGO: MongoFacade;
 
 type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
 async function list(ctx: connector.CommandHandlerContext) {
-	try {
+	await executeMongoCommand(ctx, async () => {
 		const collections: MongoListCollectionsResult = await (await MONGO.db(ctx.params.db)).listCollections({}).toArray();
 
 		ctx.type = "application/json";
@@ -23,13 +23,7 @@ async function list(ctx: connector.CommandHandlerContext) {
 				})
 			}
 		};
-	} catch (e) {
-		ctx.type = "application/json";
-		ctx.body = {
-			status: 1, // value for fugazi.components.commands.handler.ResultStatus.Failure
-			error: e.message
-		};
-	}
+	});
 }
 
 export function init(builder: connector.Builder, mongo: MongoFacade): connector.Module {

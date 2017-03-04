@@ -16,14 +16,29 @@ to go on npm, because of that it's needed to clone it as well and follow the ins
 6. Run the connector: `/CONNECTOR > node ./scripts/bin/index.js`
 
 ### Options
-You can pass the `port` and `host` to the connector when running it:
+You can pass the following options to the connector when running it:
 
-**Port**  
-`/CONNECTOR > node ./scripts/bin/index.js -p 5454`  
-Or  
-`/CONNECTOR > node ./scripts/bin/index.js --port 5454`
+* **Mongo port** (*--mongo-port*)  
+The port to which the mongo service is bound  
+Default is *27017*  
+Example:  
+`/CONNECTOR > node ./scripts/bin/index.js --mongo-port 5454`
 
-**Host**  
-`/CONNECTOR > node ./scripts/bin/index.js -h localhost`  
-Or  
-`/CONNECTOR > node ./scripts/bin/index.js --host 0.0.0.0`
+* **Mongo host** (*--mongo-host*)  
+The host to which the mongo service is bound  
+Default is *localhost*  
+Example:  
+`/CONNECTOR > node ./scripts/bin/index.js --mongo-host localhost`
+
+* **Listen port** (*--listen-port*)  
+The port to which this connector service is bound  
+Default is *33333*  
+Example:  
+`/CONNECTOR > node ./scripts/bin/index.js --listen-port 23422`
+
+* **Listen host** (*--listen-host*)  
+The host to which this connector service is bound  
+Default is *localhost*  
+Example:  
+`/CONNECTOR > node ./scripts/bin/index.js --listen-host 0.0.0.0`
+
