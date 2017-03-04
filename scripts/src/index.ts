@@ -8,11 +8,14 @@ import * as connector from "fugazi.connector.node";
 import program = require("commander");
 
 import { MongoFacade } from "./shared";
+const pjson = require("../../package.json");
 
-const VERSION = "1.0.0",
+const VERSION = pjson.version as string,
 	DEFAULT_HOST = "localhost",
 	DEFAULT_MONGO_PORT = 27017,
 	DEFAULT_LISTEN_PORT = 33333;
+
+let CONNECTOR: connector.Connector;
 
 let mongoPort: number,
 	mongoHost: string;
@@ -72,7 +75,6 @@ declare module "commander" {
 	}
 }
 
-let CONNECTOR: connector.Connector;
 (() => {
 	program.version(VERSION)
 		.option("--mongo-host [host]", "Port on which MongoDB is listening")
