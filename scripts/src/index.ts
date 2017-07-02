@@ -3,11 +3,14 @@
  */
 
 import * as mongo from "mongodb";
-import * as connector from "fugazi.connector.node";
+import * as connector from "@fugazi/connector";
+
+import { init as databases } from "./databases";
+import { init as collections } from "./collections";
 
 import program = require("commander");
 
-import { MongoFacade } from "./shared";
+import * as shared from "./shared";
 const pjson = require("../../package.json");
 
 const VERSION = pjson.version as string,
@@ -17,57 +20,9 @@ const VERSION = pjson.version as string,
 
 let CONNECTOR: connector.Connector;
 
-let mongoPort: number,
-	mongoHost: string;
-
-type FacadeImpl = MongoFacade & {
-	_admin: mongo.Admin;
-	_dbs: Map<string, mongo.Db>
-	loadDb(this: FacadeImpl, name?: string): Promise<mongo.Db>;
-	setDb(this: FacadeImpl, name: string, db: mongo.Db): void;
-};
-const FACADE: FacadeImpl = {
-	_admin: null as any,
-	_dbs: new Map<string, mongo.Db>(),
-
-	db: function(this: FacadeImpl, name: string) {
-		if (!this._dbs.has(name)) {
-			return this.loadDb(name);
-		}
-		return Promise.resolve(this._dbs.get(name));
-	},
-	admin: function(this: FacadeImpl) {
-		if (!this._admin) {
-			return this.loadDb().then(db => db.admin());;
-		}
-
-		return Promise.resolve(this._admin);
-	},
-
-	setDb(this: FacadeImpl, name: string, db: mongo.Db) {
-		this._dbs.set(name, db);
-
-		if (!this._admin) {
-			this._admin = db.admin();
-		}
-	},
-	loadDb(this: FacadeImpl, name?: string) {
-		const url = establishMongoUrl(name);
-
-		return mongo.MongoClient.connect(url).then(db => {
-			CONNECTOR.logger.info(`connected to mongo at ${ url }`);
-
-			this._dbs.set(db.databaseName, db);
-			return db;
-		});
-	}
-};
-
-import { init as databases } from "./databases";
-import { init as collections } from "./collections";
-
 declare module "commander" {
 	interface ICommand {
+		db?: string;
 		mongoHost?: string;
 		mongoPort?: number | string;
 		listenHost?: string;
@@ -75,42 +30,70 @@ declare module "commander" {
 	}
 }
 
+function addTypes(module: connector.components.ModuleBuilder): void {
+	module
+		.lookup("dbname", "module:default.db")
+		.type({
+			"name": "db",
+			"title": "Database",
+			"type": {
+				"name": "string"
+			}
+		})
+		.type({
+			"name": "collection",
+			"title": "Collection",
+			"type": {
+				"name": "string"
+			}
+		});
+}
+
 (() => {
 	program.version(VERSION)
-		.option("--mongo-host [host]", "Port on which MongoDB is listening")
-		.option("--mongo-port [port]", "Host on which MongoDB is listening")
+		.option("--db [db-name]", "The database to connect to")
+		.option("--mongo-host [host]", "Host on which MongoDB is listening")
+		.option("--mongo-port [port]", "Port on which MongoDB is listening")
 		.option("--listen-host [host]", "Host on which the service will listen on")
 		.option("--listen-port [port]", "Port on which the service will listen on")
 		.parse(process.argv);
 
+	const db = program.db || null;
 	const listenHost = program.listenHost || DEFAULT_HOST;
 	const listenPort = Number(program.listenPort) || DEFAULT_LISTEN_PORT;
 
-	mongoHost = program.mongoHost || DEFAULT_HOST;
-	mongoPort = Number(program.mongoPort) || DEFAULT_MONGO_PORT;
+	const mongoHost = program.mongoHost || DEFAULT_HOST;
+	const mongoPort = Number(program.mongoPort) || DEFAULT_MONGO_PORT;
 
-	const builder = new connector.Builder();
+	const builder = new connector.ConnectorBuilder();
 	builder.server().host(listenHost).port(listenPort);
-	const module = {
+	const module = builder.module({
 		name: "mongo",
-		title: "MongoDB connector",
-		modules: {}
-	} as connector.RootModule;
+		title: "MongoDB connector"
+	});
 
-	(module.modules as connector.ComponentMap<connector.Module>)["database"] = databases(builder, FACADE);
-	(module.modules as connector.ComponentMap<connector.Module>)["collections"] = collections(builder, FACADE);
+	addTypes(module);
 
-	builder.module("/descriptor.json", module, true);
-	CONNECTOR = builder.build();
-	CONNECTOR.start();
-})();
+	databases(module);
+	collections(module);
 
-function establishMongoUrl(dbName?: string): string {
-	const url = `mongodb://${ mongoHost }:${ mongoPort }`;
-
-	if (dbName && dbName.trim().length > 0) {
-		return url + "/" + dbName;
+	let whenToStartServer: Promise<any>;
+	if (db) {
+		whenToStartServer = shared.db(db);
+	} else {
+		whenToStartServer = Promise.resolve();
 	}
 
-	return url;
-}
+	whenToStartServer.then(() => {
+		CONNECTOR = builder.build();
+		shared.init(CONNECTOR.logger, mongoHost, mongoPort);
+		CONNECTOR.logger.info(`Connected to mongo at ${ mongoHost }:${ mongoPort }`);
+		CONNECTOR.start().then(() => CONNECTOR.logger.info("connector started"));
+	}).catch((e: any) => {
+		if (e instanceof Error) {
+			console.error("failed to start mongo, message: " + e.message);
+		} else {
+			console.error("failed to start mongo, error: ", e);
+		}
+	});
+})();

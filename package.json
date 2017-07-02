@@ -17,10 +17,11 @@
   },
   "homepage": "https://github.com/fugazi-io/connector.node.mongo#readme",
   "dependencies": {
+    "@fugazi/connector": "^1.0.13",
     "@types/commander": "^2.3.31",
     "@types/mongodb": "^2.1.40",
     "commander": "^2.9.0",
     "mongodb": "^2.2.24",
-    "typescript": "^2.1.6"
+    "typescript": "^2.4.1"
   }
 }

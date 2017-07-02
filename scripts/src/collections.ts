@@ -2,60 +2,31 @@
  * Created by nitzan on 21/02/2017.
  */
 
-import { MongoFacade, executeMongoCommand } from "./shared";
-import * as connector from "fugazi.connector.node";
+import * as shared from "./shared";
+import * as connector from "@fugazi/connector";
 
-let MONGO: MongoFacade;
-
-
-type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
-async function list(ctx: connector.CommandHandlerContext) {
-	await executeMongoCommand(ctx, async () => {
-		const collections: MongoListCollectionsResult = await (await MONGO.db(ctx.params.db)).listCollections({}).toArray();
-
-		ctx.type = "application/json";
-		ctx.body = {
-			status: 0, // value for fugazi.components.commands.handler.ResultStatus.Success
-			value: {
-				count: collections.length,
-				items: collections.map(collection => {
-					return {name: collection.name};
-				})
-			}
-		};
-	});
-}
-
-export function init(builder: connector.Builder, mongo: MongoFacade): connector.Module {
-	MONGO = mongo;
-	builder.command("/:db/collections", "get", list);
-
-	return {
-		title: "collection commands",
-		types: {
-			collection: {
-				title: "a collection",
-				type: {
-					name: "string"
-				}
-			},
-			collections: {
-				title: "collections",
-				type: {
-					count: "numbers.integer",
-					items: "list<collection>"
-				}
-			}
-		},
-		commands: {
-			list: {
+export function init(module: connector.components.ModuleBuilder): void {
+	module
+		.module("collections")
+			.type({
+				"name": "collections",
+				"type": "list<collection>"
+			})
+			.command("list", {
 				title: "returns all of the collections in a db",
 				returns: "collections",
-				syntax: "list collections in (db string)",
-				handler: {
-					endpoint: "{ db }/collections"
-				}
-			}
-		}
-	};
+				syntax: [
+					"list collections",
+					"list collections in (dbname string)"
+				]
+			})
+			.endpoint("{ dbname }/collections")
+			.handler(list);
+}
+
+type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
+function list(request: connector.server.Request): Promise<connector.server.Response> {
+	return shared.wrapCommandResult(shared.db(request.data("db")).then(db => {
+		return (db.listCollections({}).toArray() as Promise<MongoListCollectionsResult>).then(collections => collections.map(collection => ({ name: collection.name })));
+	}));
 }
