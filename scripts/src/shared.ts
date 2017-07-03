@@ -13,10 +13,13 @@ let _logger: LoggerInstance,
 	_mongoPort: number,
 	_mongoHost: string;
 
-/*export type MongoFacade = {
-	db(name: string): Promise<mongo.Db>;
-	admin(): Promise<mongo.Admin>;
-}*/
+export type Db = {
+	name: string;
+}
+
+export type Collection = {
+	name: string;
+}
 
 export function init(logger: LoggerInstance, mongoHost: string, mongoPort: number) {
 	_logger = logger;
@@ -45,6 +48,10 @@ export function setDb(name: string, db: mongo.Db) {
 	if (!_admin) {
 		_admin = db.admin();
 	}
+}
+
+export function createHandler(fn: (request: connector.server.Request) => Promise<any>): (request: connector.server.Request) => Promise<connector.server.Response> {
+	return (request: connector.server.Request) => wrapCommandResult(fn(request));
 }
 
 export function wrapCommandResult(resultPromise: Promise<any>): Promise<connector.server.Response> {

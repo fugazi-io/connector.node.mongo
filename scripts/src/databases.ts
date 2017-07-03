@@ -21,7 +21,7 @@ export function init(module: connector.components.ModuleBuilder): void {
 				syntax: "list dbs"
 			})
 			.endpoint("dbs")
-			.handler(list)
+			.handler(shared.createHandler(list))
 			.parent()
 		.command("create", {
 				title: "creates a new db",
@@ -29,7 +29,7 @@ export function init(module: connector.components.ModuleBuilder): void {
 				syntax: "create db (dbname string)"
 			})
 			.endpoint("dbs/create/{ dbname }")
-			.handler(createDb)
+			.handler(shared.createHandler(createDb))
 			.parent()
 		.command("drop", {
 				title: "drops a db",
@@ -40,7 +40,7 @@ export function init(module: connector.components.ModuleBuilder): void {
 				]
 			})
 			.endpoint("dbs/drop/{ dbname }")
-			.handler(dropDb)
+			.handler(shared.createHandler(dropDb))
 			.parent()
 		.commands(pathFor("client-scripts/bin/database.commands.js"));
 }
@@ -51,25 +51,25 @@ type MongoListDatabasesResult = {
 	databases: Array<{ name: string; sizeOnDisk: number; empty: boolean; }>;
 }
 
-function list(request: connector.server.Request): Promise<connector.server.Response> {
-	return shared.wrapCommandResult(shared.admin().then(admin => {
+function list(request: connector.server.Request): Promise<shared.Db[]> {
+	return shared.admin().then(admin => {
 		return (admin.listDatabases() as Promise<MongoListDatabasesResult>).then(obj => {
 			return obj.databases.map(db => ({ name: db.name }));
 		});
-	}));
+	});
 }
 
-function createDb(request: connector.server.Request): Promise<connector.server.Response> {
-	return shared.wrapCommandResult(shared.db(request.data("dbname")).then(db => {
+function createDb(request: connector.server.Request): Promise<shared.Db> {
+	return shared.db(request.data("dbname")).then(db => {
 		return { name: db.databaseName };
-	}));
+	});
 }
 
-function dropDb(request: connector.server.Request): Promise<connector.server.Response> {
-	return shared.wrapCommandResult(shared.db(request.data("dbname")).then(db => {
+function dropDb(request: connector.server.Request): Promise<string> {
+	return shared.db(request.data("dbname")).then(db => {
 		const name = db.databaseName;
 
 		return db.dropDatabase()
 			.then(() => "The db '" + name + "' was dropped");
-	}));
+	});
 }
