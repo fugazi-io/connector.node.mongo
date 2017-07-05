@@ -6,43 +6,18 @@ import * as connector from "@fugazi/connector";
 import * as shared from "./shared";
 
 const pathFor = connector.utils.path.getter(__dirname, "../../");
+const COMMANDS = [] as Array<(module: connector.components.ModuleBuilder) => void>;
 
-export function init(module: connector.components.ModuleBuilder): void {
-	module
-		.module("databases")
+export function init(parentModule: connector.components.ModuleBuilder): void {
+	const module = parentModule.module("databases")
 		.type({
 			"name": "dbs",
 			"title": "List of dbs",
 			"type": "list<db>"
 		})
-		.command("list", {
-				title: "returns all of the databases in this mongo",
-				returns: "dbs",
-				syntax: "list dbs"
-			})
-			.endpoint("dbs")
-			.handler(shared.createHandler(list))
-			.parent()
-		.command("create", {
-				title: "creates a new db",
-				returns: "db",
-				syntax: "create db (dbname string)"
-			})
-			.endpoint("dbs/create/{ dbname }")
-			.handler(shared.createHandler(createDb))
-			.parent()
-		.command("drop", {
-				title: "drops a db",
-				returns: "ui.message",
-				syntax: [
-					"drop db",
-					"drop db (dbname string)"
-				]
-			})
-			.endpoint("dbs/drop/{ dbname }")
-			.handler(shared.createHandler(dropDb))
-			.parent()
 		.commands(pathFor("client-scripts/bin/database.commands.js"));
+
+	COMMANDS.forEach(fn => fn(module));
 }
 
 type MongoListDatabasesResult = {
@@ -58,12 +33,32 @@ function list(request: connector.server.Request): Promise<shared.Db[]> {
 		});
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("list", {
+			title: "returns all of the databases in this mongo",
+			returns: "dbs",
+			syntax: "list dbs"
+		})
+		.endpoint("dbs")
+		.handler(shared.createHandler(list));
+});
 
 function createDb(request: connector.server.Request): Promise<shared.Db> {
 	return shared.db(request.data("dbname")).then(db => {
 		return { name: db.databaseName };
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("create", {
+			title: "creates a new db",
+			returns: "db",
+			syntax: "create db (dbname string)"
+		})
+		.endpoint("dbs/create/{ dbname }")
+		.handler(shared.createHandler(createDb));
+});
 
 function dropDb(request: connector.server.Request): Promise<string> {
 	return shared.db(request.data("dbname")).then(db => {
@@ -73,3 +68,16 @@ function dropDb(request: connector.server.Request): Promise<string> {
 			.then(() => "The db '" + name + "' was dropped");
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("drop", {
+			title: "drops a db",
+			returns: "ui.message",
+			syntax: [
+				"drop db",
+				"drop db (dbname string)"
+			]
+		})
+		.endpoint("dbs/drop/{ dbname }")
+		.handler(shared.createHandler(dropDb));
+});

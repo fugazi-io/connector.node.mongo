@@ -5,46 +5,16 @@
 import * as shared from "./shared";
 import * as connector from "@fugazi/connector";
 
-export function init(module: connector.components.ModuleBuilder): void {
-	module
-		.module("collections")
-			.type({
-				"name": "collections",
-				"type": "list<collection>"
-			})
-			.command("list", {
-					title: "returns all of the collections in a db",
-					returns: "collections",
-					syntax: [
-						"list collections",
-						"list collections in (dbname string)"
-					]
-				})
-				.endpoint("{ dbname }/collections")
-				.handler(shared.createHandler(list))
-				.parent()
-			.command("create", {
-					title: "creates a new collection",
-					returns: "collection",
-					syntax: [
-						"create collection (collectionName string)",
-						"create collection (collectionName string) in (dbname string)"
-					]
-				})
-				.endpoint("{ dbname }/collections/create/{ collectionName }")
-				.handler(shared.createHandler(create))
-				.parent()
-			.command("insertOne", {
-					title: "inserts a document",
-					returns: "map",
-					syntax: [
-						"insert (doc map) into collection (collectionName string)",
-						"insert (doc map) into collection (collectionName string) in (dbname string)"
-					]
-				})
-				.method("post")
-				.endpoint("{ dbname }/collection/{ collectionName }/insert-one")
-				.handler(shared.createHandler(insertOne));
+const COMMANDS = [] as Array<(module: connector.components.ModuleBuilder) => void>;
+
+export function init(parentModule: connector.components.ModuleBuilder): void {
+	const module = parentModule.module("collections")
+		.type({
+			"name": "collections",
+			"type": "list<collection>"
+		});
+
+	COMMANDS.forEach(fn => fn(module));
 }
 
 type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
@@ -53,12 +23,38 @@ function list(request: connector.server.Request): Promise<shared.Collection[]> {
 		return (db.listCollections({}).toArray() as Promise<MongoListCollectionsResult>).then(collections => collections.map(collection => ({ name: collection.name })));
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("list", {
+			title: "returns all of the collections in a db",
+			returns: "collections",
+			syntax: [
+				"list collections",
+				"list collections in (dbname string)"
+			]
+		})
+		.endpoint("{ dbname }/collections")
+		.handler(shared.createHandler(list));
+});
 
 function create(request: connector.server.Request): Promise<shared.Collection> {
 	return shared.db(request.data("dbname")).then(db => {
 		return db.createCollection(request.data("collectionName")).then(collection => ({ name: collection.collectionName }));
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("create", {
+			title: "creates a new collection",
+			returns: "collection",
+			syntax: [
+				"create collection (collectionName string)",
+				"create collection (collectionName string) in (dbname string)"
+			]
+		})
+		.endpoint("{ dbname }/collections/create/{ collectionName }")
+		.handler(shared.createHandler(create));
+});
 
 type Document = {
 	[key: string]: any;
@@ -78,3 +74,16 @@ function insertOne(request: connector.server.Request): Promise<SavedDocument> {
 			.then(result => Object.assign({}, doc, { _id: result.insertedId }));
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("insertOne", {
+			title: "inserts a document",
+			returns: "map",
+			syntax: [
+				"insert (doc map) into collection (collectionName string)",
+				"insert (doc map) into collection (collectionName string) in (dbname string)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/insert-one");
+});
