@@ -2,60 +2,88 @@
  * Created by nitzan on 21/02/2017.
  */
 
-import { MongoFacade, executeMongoCommand } from "./shared";
-import * as connector from "fugazi.connector.node";
+import * as shared from "./shared";
+import * as connector from "@fugazi/connector";
 
-let MONGO: MongoFacade;
+const COMMANDS = [] as Array<(module: connector.components.ModuleBuilder) => void>;
 
+export function init(parentModule: connector.components.ModuleBuilder): void {
+	const module = parentModule.module("collections")
+		.type({
+			"name": "collections",
+			"type": "list<collection>"
+		});
+
+	COMMANDS.forEach(fn => fn(module));
+}
 
 type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
-async function list(ctx: connector.CommandHandlerContext) {
-	await executeMongoCommand(ctx, async () => {
-		const collections: MongoListCollectionsResult = await (await MONGO.db(ctx.params.db)).listCollections({}).toArray();
-
-		ctx.type = "application/json";
-		ctx.body = {
-			status: 0, // value for fugazi.components.commands.handler.ResultStatus.Success
-			value: {
-				count: collections.length,
-				items: collections.map(collection => {
-					return {name: collection.name};
-				})
-			}
-		};
+function list(request: connector.server.Request): Promise<shared.Collection[]> {
+	return shared.db(request.data("dbname")).then(db => {
+		return (db.listCollections({}).toArray() as Promise<MongoListCollectionsResult>).then(collections => collections.map(collection => ({ name: collection.name })));
 	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("list", {
+			title: "returns all of the collections in a db",
+			returns: "collections",
+			syntax: [
+				"list collections",
+				"list collections in (dbname string)"
+			]
+		})
+		.endpoint("{ dbname }/collections")
+		.handler(shared.createHandler(list));
+});
 
-export function init(builder: connector.Builder, mongo: MongoFacade): connector.Module {
-	MONGO = mongo;
-	builder.command("/:db/collections", "get", list);
-
-	return {
-		title: "collection commands",
-		types: {
-			collection: {
-				title: "a collection",
-				type: {
-					name: "string"
-				}
-			},
-			collections: {
-				title: "collections",
-				type: {
-					count: "numbers.integer",
-					items: "list<collection>"
-				}
-			}
-		},
-		commands: {
-			list: {
-				title: "returns all of the collections in a db",
-				returns: "collections",
-				syntax: "list collections in (db string)",
-				handler: {
-					endpoint: "{ db }/collections"
-				}
-			}
-		}
-	};
+function create(request: connector.server.Request): Promise<shared.Collection> {
+	return shared.db(request.data("dbname")).then(db => {
+		return db.createCollection(request.data("collectionName")).then(collection => ({ name: collection.collectionName }));
+	});
 }
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("create", {
+			title: "creates a new collection",
+			returns: "collection",
+			syntax: [
+				"create collection (collectionName string)",
+				"create collection (collectionName string) in (dbname string)"
+			]
+		})
+		.endpoint("{ dbname }/collections/create/{ collectionName }")
+		.handler(shared.createHandler(create));
+});
+
+type Document = {
+	[key: string]: any;
+}
+type SavedDocument = Document & { _id: string };
+function insertOne(request: connector.server.Request): Promise<SavedDocument> {
+	let doc = request.data("doc");
+
+	if (typeof doc === "string") {
+		doc = JSON.parse(doc);
+	}
+
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.insertOne(doc)
+			.then(result => Object.assign({}, doc, { _id: result.insertedId }));
+	});
+}
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("insertOne", {
+			title: "inserts a document",
+			returns: "map",
+			syntax: [
+				"insert (doc map) into collection (collectionName string)",
+				"insert (doc map) into collection (collectionName string) in (dbname string)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/insert-one");
+});
