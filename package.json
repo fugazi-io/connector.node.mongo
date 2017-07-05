@@ -1,9 +1,13 @@
 {
   "name": "fugazi.connector.node.mongo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a fugazi mongodb connector for node",
   "main": "scripts/bin/index.js",
   "scripts": {
+    "compile-client": "node_modules/typescript/bin/tsc -p client-scripts",
+    "compile-server": "node_modules/typescript/bin/tsc -p scripts",
+    "compile": "run-p compile-server compile-client",
+    "start": "node scripts/bin/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,5 +27,8 @@
     "commander": "^2.9.0",
     "mongodb": "^2.2.24",
     "typescript": "^2.4.1"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.0.1"
   }
 }
