@@ -1,8 +1,17 @@
 {
-  "name": "fugazi.connector.node.mongo",
+  "name": "@fugazi/connector.mongo",
   "version": "1.0.2",
   "description": "a fugazi mongodb connector for node",
   "main": "scripts/bin/index.js",
+  "types": "scripts/bin/index.d.ts",
+  "keywords": [
+    "fugazi",
+    "mongo",
+    "cli",
+    "api",
+    "rest",
+    "rpc"
+  ],
   "scripts": {
     "compile-client": "node_modules/typescript/bin/tsc -p client-scripts",
     "compile-server": "node_modules/typescript/bin/tsc -p scripts",
