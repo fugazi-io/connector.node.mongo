@@ -90,6 +90,7 @@ The following commands are supported:
  * list collections in a db
  * create a collection in a db
  * insert one document to a collection
+ * find one document with a given field equals a given value
  
  More commands to follow.
  

@@ -1,6 +1,6 @@
 {
   "name": "@fugazi/connector.mongo",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a fugazi mongodb connector for node",
   "main": "scripts/bin/index.js",
   "types": "scripts/bin/index.d.ts",
@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/fugazi-io/connector.node.mongo#readme",
   "dependencies": {
-    "@fugazi/connector": "^1.0.13",
+    "@fugazi/connector": "^1.0.15",
     "@types/commander": "^2.3.31",
     "@types/mongodb": "^2.1.40",
     "commander": "^2.9.0",

@@ -2,5 +2,6 @@
 node_modules
 
 app.log
+npm-debug.log
 **/scripts/bin
 client-scripts/bin

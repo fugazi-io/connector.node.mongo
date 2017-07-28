@@ -90,22 +90,22 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		})
 		.method("post")
 		.endpoint("{ dbname }/collection/{ collectionName }/insert-one")
-        .handler(shared.createHandler(insertOne));
+		.handler(shared.createHandler(insertOne));
 });
 
 
 function findOneEquals(request: connector.server.Request): Promise<SavedDocument> {
-    let doc = request.data("doc");
+	let doc = request.data("doc");
 
-    if (typeof doc === "string") {
-        doc = JSON.parse(doc);
-    }
+	if (typeof doc === "string") {
+		doc = JSON.parse(doc);
+	}
 
-    return shared.db(request.data("dbname")).then(db => {
-        return db
-            .collection(request.data("collectionName"))
-            .findOne({ [request.data("field")]: request.data("value") });
-    });
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.findOne({ [request.data("field")]: request.data("value") });
+	});
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
@@ -120,5 +120,5 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		})
 		.method("post")
 		.endpoint("{ dbname }/collection/{ collectionName }/findOneEquals/{ field }/is/{ value }")
-        .handler(shared.createHandler(findOneEquals));
+		.handler(shared.createHandler(findOneEquals));
 });
