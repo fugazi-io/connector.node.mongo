@@ -12,6 +12,10 @@ export function init(parentModule: connector.components.ModuleBuilder): void {
 		.type({
 			"name": "collections",
 			"type": "list<collection>"
+		})
+		.type({
+			"name": "document",
+			"type": "map"
 		});
 
 	COMMANDS.forEach(fn => fn(module));
@@ -86,5 +90,35 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		})
 		.method("post")
 		.endpoint("{ dbname }/collection/{ collectionName }/insert-one")
-		.handler(shared.createHandler(insertOne));
+        .handler(shared.createHandler(insertOne));
+});
+
+
+function findOneEquals(request: connector.server.Request): Promise<SavedDocument> {
+    let doc = request.data("doc");
+
+    if (typeof doc === "string") {
+        doc = JSON.parse(doc);
+    }
+
+    return shared.db(request.data("dbname")).then(db => {
+        return db
+            .collection(request.data("collectionName"))
+            .findOne({ [request.data("field")]: request.data("value") });
+    });
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("findOneEquals", {
+			title: "finds a document filtered by a single field",
+			returns: "document",
+			syntax: [
+				"find one in collection (collectionName string) where (field string) is (value string)",
+				"find one in collection (collectionName string) in (dbname string) where (field string) is (value string)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/findOneEquals/{ field }/is/{ value }")
+        .handler(shared.createHandler(findOneEquals));
 });
