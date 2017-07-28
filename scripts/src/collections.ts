@@ -85,5 +85,6 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 			]
 		})
 		.method("post")
-		.endpoint("{ dbname }/collection/{ collectionName }/insert-one");
+		.endpoint("{ dbname }/collection/{ collectionName }/insert-one")
+		.handler(shared.createHandler(insertOne));
 });
