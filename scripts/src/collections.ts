@@ -122,3 +122,29 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.endpoint("{ dbname }/collection/{ collectionName }/findOneEquals/{ field }/is/{ value }")
 		.handler(shared.createHandler(findOneEquals));
 });
+
+function find(request: connector.server.Request): Promise<SavedDocument[]> {
+	const query = JSON.parse(request.data("query"));
+
+    return shared.db(request.data("dbname")).then(db => {
+        return db
+            .collection(request.data("collectionName"))
+            .find(query)
+			.toArray();
+    });
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+    module
+        .command("find", {
+            title: "finds documents with a query",
+            returns: "list<document>",
+            syntax: [
+                "find in collection (collectionName string) where (query map)",
+                "find in collection (collectionName string) in (dbname string) where (query map)"
+            ]
+        })
+        .method("post")
+        .endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
+        .handler(shared.createHandler(find));
+});
