@@ -2,12 +2,12 @@
  * Created by nitzan on 13/03/2017.
  */
 
-/// <reference path="../../node_modules/@fugazi/connector/client-types/components/components.d.ts" />
-/// <reference path="../../node_modules/@fugazi/connector/client-types/components/converters.d.ts" />
-/// <reference path="../../node_modules/@fugazi/connector/client-types/components/modules.d.ts" />
+declare module fugazi {
+	function loaded(descriptor: any);
+}
 
 (function(): void {
-	fugazi.components.modules.descriptor.loaded({
+	fugazi.loaded({
 		name: "mongo.databases",
 		commands: {
 			use: {
