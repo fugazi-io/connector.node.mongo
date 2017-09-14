@@ -114,8 +114,8 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 			title: "finds a document filtered by a single field",
 			returns: "document",
 			syntax: [
-				"find one in collection (collectionName string) where (field string) is (value string)",
-				"find one in collection (collectionName string) in (dbname string) where (field string) is (value string)"
+				"find one in collection (collectionName string) where (field string) is (value String)",
+				"find one in collection (collectionName string) in (dbname string) where (field string) is (value String)"
 			]
 		})
 		.method("post")
@@ -147,4 +147,34 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.method("post")
 		.endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
 		.handler(shared.createHandler(find));
+});
+
+
+function findOne(request: connector.server.Request): Promise<SavedDocument> {
+	let query = request.data("query");
+
+	if (typeof query === "string") {
+		query = JSON.parse(query);
+	}
+
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.findOne( query );
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("findOne", {
+			title: "finds first document that matches the collection",
+			returns: "document",
+			syntax: [
+				"find one in collection (collectionName string) where (query map)",
+				"find one in collection (collectionName string) in (dbname string) where (query map)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/findOne")
+		.handler(shared.createHandler(findOne));
 });
