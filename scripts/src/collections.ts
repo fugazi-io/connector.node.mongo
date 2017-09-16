@@ -114,8 +114,8 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 			title: "finds a document filtered by a single field",
 			returns: "document",
 			syntax: [
-				"find one in collection (collectionName string) where (field string) is (value String)",
-				"find one in collection (collectionName string) in (dbname string) where (field string) is (value String)"
+				"find one in collection (collectionName string) where (field string) is (value string)",
+				"find one in collection (collectionName string) in (dbname string) where (field string) is (value string)"
 			]
 		})
 		.method("post")
