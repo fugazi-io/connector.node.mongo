@@ -93,6 +93,34 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.handler(shared.createHandler(insertOne));
 });
 
+function findOne(request: connector.server.Request): Promise<SavedDocument> {
+	let query = request.data("query");
+
+	if (typeof query === "string") {
+		query = JSON.parse(query);
+	}
+
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.findOne(query);
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("findOne", {
+			title: "finds first document that matches the collection",
+			returns: "document",
+			syntax: [
+				"find one in collection (collectionName string) where (query map)",
+				"find one in collection (collectionName string) in (dbname string) where (query map)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/findOne")
+		.handler(shared.createHandler(findOne));
+});
 
 function findOneEquals(request: connector.server.Request): Promise<SavedDocument> {
 	let doc = request.data("doc");
