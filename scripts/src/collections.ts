@@ -123,15 +123,21 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.handler(shared.createHandler(findOneEquals));
 });
 
-function find(request: connector.server.Request): Promise<SavedDocument[]> {
-	const query = JSON.parse(request.data("query"));
-
-    return shared.db(request.data("dbname")).then(db => {
+function doFind(dbname: string, collectionName: string, query: any): Promise<SavedDocument[]> {
+    return shared.db(dbname).then(db => {
         return db
-            .collection(request.data("collectionName"))
+            .collection(collectionName)
             .find(query)
 			.toArray();
     });
+}
+
+function find(request: connector.server.Request): Promise<SavedDocument[]> {
+	return doFind(
+		request.data("dbname"),
+		request.data("collectionName"),
+		JSON.parse(request.data("query"))
+	);
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
@@ -147,4 +153,26 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
         .method("post")
         .endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
         .handler(shared.createHandler(find));
+});
+
+function listDocuments(request: connector.server.Request): Promise<SavedDocument[]> {
+	return doFind(
+		request.data("dbname"),
+		request.data("collectionName"),
+		{}
+	);
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+    module
+        .command("list", {
+            title: "lists documents in a collection",
+            returns: "list<document>",
+            syntax: [
+				"list documents in collection (collectionName string) in (dbname string)",
+            ]
+        })
+        .method("get")
+        .endpoint("{ dbname }/collection/{ collectionName }/list")
+        .handler(shared.createHandler(listDocuments));
 });
