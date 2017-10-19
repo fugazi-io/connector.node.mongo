@@ -124,12 +124,12 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 });
 
 function doFind(dbname: string, collectionName: string, query: any): Promise<SavedDocument[]> {
-    return shared.db(dbname).then(db => {
-        return db
-            .collection(collectionName)
-            .find(query)
+	return shared.db(dbname).then(db => {
+		return db
+			.collection(collectionName)
+			.find(query)
 			.toArray();
-    });
+	});
 }
 
 function find(request: connector.server.Request): Promise<SavedDocument[]> {
@@ -141,18 +141,18 @@ function find(request: connector.server.Request): Promise<SavedDocument[]> {
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("find", {
-            title: "finds documents with a query",
-            returns: "list<document>",
-            syntax: [
-                "find in collection (collectionName string) where (query map)",
-                "find in collection (collectionName string) in (dbname string) where (query map)"
-            ]
-        })
-        .method("post")
-        .endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
-        .handler(shared.createHandler(find));
+	module
+		.command("find", {
+			title: "finds documents with a query",
+			returns: "list<document>",
+			syntax: [
+				"find in collection (collectionName string) where (query map)",
+				"find in collection (collectionName string) in (dbname string) where (query map)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
+		.handler(shared.createHandler(find));
 });
 
 function listDocuments(request: connector.server.Request): Promise<SavedDocument[]> {
@@ -164,15 +164,15 @@ function listDocuments(request: connector.server.Request): Promise<SavedDocument
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("list", {
-            title: "lists documents in a collection",
-            returns: "list<document>",
-            syntax: [
+	module
+		.command("list", {
+			title: "lists documents in a collection",
+			returns: "list<document>",
+			syntax: [
 				"list documents in collection (collectionName string) in (dbname string)",
-            ]
-        })
-        .method("get")
-        .endpoint("{ dbname }/collection/{ collectionName }/list")
-        .handler(shared.createHandler(listDocuments));
+			]
+		})
+		.method("get")
+		.endpoint("{ dbname }/collection/{ collectionName }/list")
+		.handler(shared.createHandler(listDocuments));
 });
