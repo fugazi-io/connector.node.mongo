@@ -91,6 +91,7 @@ The following commands are supported:
  * create a collection in a db
  * insert one document to a collection
  * find one document with a given field equals a given value
+ * list documents in a collection
  
  More commands to follow.
  
