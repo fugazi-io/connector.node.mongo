@@ -204,3 +204,26 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.endpoint("{ dbname }/collection/{ collectionName }/list")
 		.handler(shared.createHandler(listDocuments));
 });
+
+function countDocuments(request: connector.server.Request): Promise<number> {
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.count(JSON.parse(request.data("query")));
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("count", {
+			title: "count documents in a collection",
+			returns: "number",
+			syntax: [
+				"count documents in collection (collectionName string) where (query map)",
+				"count documents in collection (collectionName string) in (dbname string) where (query map)",
+			]
+		})
+		.method("get")
+		.endpoint("{ dbname }/collection/{ collectionName }/countd/{ query }")
+		.handler(shared.createHandler(countDocuments));
+});
