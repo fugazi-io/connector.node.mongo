@@ -176,3 +176,49 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
         .endpoint("{ dbname }/collection/{ collectionName }/list")
         .handler(shared.createHandler(listDocuments));
 });
+
+function deleteOne(request: connector.server.Request): Promise<number> {
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.deleteOne(JSON.parse(request.data("filter")))
+			.then(result => result.deletedCount || 0);
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+    module
+        .command("deleteOne", {
+            title: "deletes a document",
+            returns: "number",
+            syntax: [
+				"delete document in collection (collectionName string) in (dbname string) where (filter map)",
+            ]
+        })
+        .method("delete")
+        .endpoint("{ dbname }/collection/{ collectionName }/deleteOne/{ filter }")
+        .handler(shared.createHandler(deleteOne));
+});
+
+function deleteMany(request: connector.server.Request): Promise<number> {
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.deleteMany(JSON.parse(request.data("filter")))
+			.then(result => result.deletedCount || 0);
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+    module
+        .command("deleteMany", {
+            title: "deletes documents",
+            returns: "number",
+            syntax: [
+				"delete documents in collection (collectionName string) in (dbname string) where (filter map)",
+            ]
+        })
+        .method("delete")
+        .endpoint("{ dbname }/collection/{ collectionName }/deleteMany/{ filter }")
+        .handler(shared.createHandler(deleteMany));
+});
