@@ -22,14 +22,15 @@ export function init(parentModule: connector.components.ModuleBuilder): void {
 }
 
 type MongoListCollectionsResult = Array<{ name: string; options: any; }>;
-function list(request: connector.server.Request): Promise<shared.Collection[]> {
+function listCollections(request: connector.server.Request): Promise<shared.Collection[]> {
 	return shared.db(request.data("dbname")).then(db => {
-		return (db.listCollections({}).toArray() as Promise<MongoListCollectionsResult>).then(collections => collections.map(collection => ({ name: collection.name })));
+		return (db.listCollections({}).toArray() as Promise<MongoListCollectionsResult>)
+			.then(collections => collections.map(collection => ({ name: collection.name })));
 	});
 }
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
 	module
-		.command("list", {
+		.command("listCollections", {
 			title: "returns all of the collections in a db",
 			returns: "collections",
 			syntax: [
@@ -38,7 +39,7 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 			]
 		})
 		.endpoint("{ dbname }/collections")
-		.handler(shared.createHandler(list));
+		.handler(shared.createHandler(listCollections));
 });
 
 function create(request: connector.server.Request): Promise<shared.Collection> {
@@ -193,11 +194,12 @@ function listDocuments(request: connector.server.Request): Promise<SavedDocument
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
 	module
-		.command("list", {
+		.command("listDocuments", {
 			title: "lists documents in a collection",
 			returns: "list<document>",
 			syntax: [
-				"list documents in collection (collectionName string) in (dbname string)",
+				"list documents in collection (collectionName string)",
+				"list documents in collection (collectionName string) in (dbname string)"
 			]
 		})
 		.method("get")
