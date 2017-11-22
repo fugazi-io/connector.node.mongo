@@ -93,6 +93,34 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 		.handler(shared.createHandler(insertOne));
 });
 
+function findOne(request: connector.server.Request): Promise<SavedDocument> {
+	let query = request.data("query");
+
+	if (typeof query === "string") {
+		query = JSON.parse(query);
+	}
+
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.findOne(query);
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
+	module
+		.command("findOne", {
+			title: "finds first document that matches the collection",
+			returns: "document",
+			syntax: [
+				"find one in collection (collectionName string) where (query map)",
+				"find one in collection (collectionName string) in (dbname string) where (query map)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/findOne")
+		.handler(shared.createHandler(findOne));
+});
 
 function findOneEquals(request: connector.server.Request): Promise<SavedDocument> {
 	let doc = request.data("doc");
@@ -124,12 +152,12 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 });
 
 function doFind(dbname: string, collectionName: string, query: any): Promise<SavedDocument[]> {
-    return shared.db(dbname).then(db => {
-        return db
-            .collection(collectionName)
-            .find(query)
+	return shared.db(dbname).then(db => {
+		return db
+			.collection(collectionName)
+			.find(query)
 			.toArray();
-    });
+	});
 }
 
 function find(request: connector.server.Request): Promise<SavedDocument[]> {
@@ -141,18 +169,18 @@ function find(request: connector.server.Request): Promise<SavedDocument[]> {
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("find", {
-            title: "finds documents with a query",
-            returns: "list<document>",
-            syntax: [
-                "find in collection (collectionName string) where (query map)",
-                "find in collection (collectionName string) in (dbname string) where (query map)"
-            ]
-        })
-        .method("post")
-        .endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
-        .handler(shared.createHandler(find));
+	module
+		.command("find", {
+			title: "finds documents with a query",
+			returns: "list<document>",
+			syntax: [
+				"find in collection (collectionName string) where (query map)",
+				"find in collection (collectionName string) in (dbname string) where (query map)"
+			]
+		})
+		.method("post")
+		.endpoint("{ dbname }/collection/{ collectionName }/find/{ query }")
+		.handler(shared.createHandler(find));
 });
 
 function listDocuments(request: connector.server.Request): Promise<SavedDocument[]> {
@@ -164,11 +192,11 @@ function listDocuments(request: connector.server.Request): Promise<SavedDocument
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("list", {
-            title: "lists documents in a collection",
-            returns: "list<document>",
-            syntax: [
+	module
+		.command("list", {
+			title: "lists documents in a collection",
+			returns: "list<document>",
+			syntax: [
 				"list documents in collection (collectionName string) in (dbname string)",
             ]
         })
@@ -183,8 +211,7 @@ function deleteOne(request: connector.server.Request): Promise<number> {
 			.collection(request.data("collectionName"))
 			.deleteOne(JSON.parse(request.data("filter")))
 			.then(result => result.deletedCount || 0);
-	});
-}
+});
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
     module
@@ -221,4 +248,27 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
         .method("delete")
         .endpoint("{ dbname }/collection/{ collectionName }/deleteMany/{ filter }")
         .handler(shared.createHandler(deleteMany));
+});
+
+function countDocuments(request: connector.server.Request): Promise<number> {
+	return shared.db(request.data("dbname")).then(db => {
+		return db
+			.collection(request.data("collectionName"))
+			.count(JSON.parse(request.data("query")));
+	});
+}
+
+COMMANDS.push((module: connector.components.ModuleBuilder) => {                 
+	module
+		.command("count", {
+			title: "count documents in a collection",
+			returns: "number",
+			syntax: [
+				"count documents in collection (collectionName string) where (query map)",
+				"count documents in collection (collectionName string) in (dbname string) where (query map)",
+			]
+		})
+		.method("get")
+		.endpoint("{ dbname }/collection/{ collectionName }/countd/{ query }")
+		.handler(shared.createHandler(countDocuments));
 });
