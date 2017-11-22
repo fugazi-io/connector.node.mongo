@@ -94,6 +94,9 @@ The following commands are supported:
  * find one
  * find one document with a given field equals a given value
  * list documents in a collection
+ * delete one document
+ * delete many documents
+ * count documents
  
  More commands to follow.
  
