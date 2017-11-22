@@ -15,7 +15,7 @@ export function init(parentModule: connector.components.ModuleBuilder): void {
 			"title": "List of dbs",
 			"type": "list<db>"
 		})
-		//.commands(pathFor("client-scripts/bin/database.commands.js"));
+		.commands(pathFor("client-scripts/bin/database.commands.js"));
 
 	COMMANDS.forEach(fn => fn(module));
 }
