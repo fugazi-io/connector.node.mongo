@@ -211,7 +211,8 @@ function deleteOne(request: connector.server.Request): Promise<number> {
 			.collection(request.data("collectionName"))
 			.deleteOne(JSON.parse(request.data("filter")))
 			.then(result => result.deletedCount || 0);
-});
+	});
+}
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
 	module
@@ -258,7 +259,7 @@ function countDocuments(request: connector.server.Request): Promise<number> {
 	});
 }
 
-COMMANDS.push((module: connector.components.ModuleBuilder) => {				 
+COMMANDS.push((module: connector.components.ModuleBuilder) => {
 	module
 		.command("count", {
 			title: "count documents in a collection",
