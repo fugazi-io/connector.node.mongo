@@ -198,11 +198,11 @@ COMMANDS.push((module: connector.components.ModuleBuilder) => {
 			returns: "list<document>",
 			syntax: [
 				"list documents in collection (collectionName string) in (dbname string)",
-            ]
-        })
-        .method("get")
-        .endpoint("{ dbname }/collection/{ collectionName }/list")
-        .handler(shared.createHandler(listDocuments));
+			]
+		})
+		.method("get")
+		.endpoint("{ dbname }/collection/{ collectionName }/list")
+		.handler(shared.createHandler(listDocuments));
 });
 
 function deleteOne(request: connector.server.Request): Promise<number> {
@@ -214,17 +214,17 @@ function deleteOne(request: connector.server.Request): Promise<number> {
 });
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("deleteOne", {
-            title: "deletes a document",
-            returns: "number",
-            syntax: [
+	module
+		.command("deleteOne", {
+			title: "deletes a document",
+			returns: "number",
+			syntax: [
 				"delete document in collection (collectionName string) in (dbname string) where (filter map)",
-            ]
-        })
-        .method("delete")
-        .endpoint("{ dbname }/collection/{ collectionName }/deleteOne/{ filter }")
-        .handler(shared.createHandler(deleteOne));
+			]
+		})
+		.method("delete")
+		.endpoint("{ dbname }/collection/{ collectionName }/deleteOne/{ filter }")
+		.handler(shared.createHandler(deleteOne));
 });
 
 function deleteMany(request: connector.server.Request): Promise<number> {
@@ -237,17 +237,17 @@ function deleteMany(request: connector.server.Request): Promise<number> {
 }
 
 COMMANDS.push((module: connector.components.ModuleBuilder) => {
-    module
-        .command("deleteMany", {
-            title: "deletes documents",
-            returns: "number",
-            syntax: [
+	module
+		.command("deleteMany", {
+			title: "deletes documents",
+			returns: "number",
+			syntax: [
 				"delete documents in collection (collectionName string) in (dbname string) where (filter map)",
-            ]
-        })
-        .method("delete")
-        .endpoint("{ dbname }/collection/{ collectionName }/deleteMany/{ filter }")
-        .handler(shared.createHandler(deleteMany));
+			]
+		})
+		.method("delete")
+		.endpoint("{ dbname }/collection/{ collectionName }/deleteMany/{ filter }")
+		.handler(shared.createHandler(deleteMany));
 });
 
 function countDocuments(request: connector.server.Request): Promise<number> {
@@ -258,7 +258,7 @@ function countDocuments(request: connector.server.Request): Promise<number> {
 	});
 }
 
-COMMANDS.push((module: connector.components.ModuleBuilder) => {                 
+COMMANDS.push((module: connector.components.ModuleBuilder) => {				 
 	module
 		.command("count", {
 			title: "count documents in a collection",
