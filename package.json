@@ -13,9 +13,10 @@
     "rpc"
   ],
   "scripts": {
-    "compile-client": "node_modules/typescript/bin/tsc -p client-scripts",
-    "compile-server": "node_modules/typescript/bin/tsc -p scripts",
-    "compile": "run-p compile-server compile-client",
+    "clean": "rimraf scripts/bin client-scripts/bin",
+    "compile-client": "tsc -p client-scripts",
+    "compile-server": "tsc -p scripts",
+    "compile": "npm-run-all clean -p compile-server compile-client",
     "start": "node scripts/bin/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
