@@ -2,8 +2,8 @@
  * Created by nitzan on 20/02/2017.
  */
 
-import * as connector from "@fugazi/connector";
 import * as shared from "./shared";
+import * as connector from "@fugazi/connector";
 
 const pathFor = connector.utils.path.getter(__dirname, "../../");
 const COMMANDS = [] as Array<(module: connector.components.ModuleBuilder) => void>;
