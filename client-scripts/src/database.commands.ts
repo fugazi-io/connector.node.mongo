@@ -15,7 +15,7 @@ declare module fugazi {
 				returns: "ui.message",
 				parametersForm: "arguments",
 				syntax: "use (dbname string)",
-				handler: (context: fugazi.app.modules.ModuleContext, dbname: string) => {
+				handler: (context: any, dbname: string) => {
 					if (context.data.has("default.db")) {
 						console.log(`previous default db: ${ context.data.get("default.db") }`);
 					}
